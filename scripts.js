@@ -2,6 +2,8 @@ window.addEventListener("load", start);
 
 var globalNames = ["Gerhard", "Ian", "Stefano"];
 var inputName = null;
+var currentIndex = null;
+var isEditing = false;
 
 
 function start(){
@@ -26,14 +28,25 @@ function activateInput(){
     inputName.addEventListener("keyup", handleTyping);
 
     function handleTyping(event){
-        if (event.key === "Enter"){
-           insertName(event.target.value);
-        }
+        if (event.key === "Enter" && event.target.value.trim() !== ""){
+            if (isEditing){
+                updateName(event.target.value);
+            } else{
+                insertName(event.target.value);
+            }                       
+            isEditing = false;
+            render();
+            clearInput();
+        }       
     }
 
     function insertName(newName){
         globalNames.push(newName);    
-        render();    
+          
+    }
+
+    function updateName(newName){
+        globalNames[currentIndex] = newName;        
     }
 }
 
@@ -53,8 +66,24 @@ function render(){
             globalNames.splice(index, 1);
             render();
         }
-
         return button;
+    }
+
+    function createSpan(name, index){
+        var span = document.createElement("span");
+        span.classList.add("clickable");
+        span.textContent = name;
+
+        span.addEventListener("click", editItem);
+
+        function editItem(){
+            inputName.value = name;
+            inputName.focus();
+            isEditing = true;
+            currentIndex = index;
+        }
+
+        return span;
     }
 
     for (var i = 0; i<globalNames.length; i++){
@@ -62,8 +91,8 @@ function render(){
 
         var li = document.createElement("li");        
         var button = createDeleteButton(i);  
-        var span = document.createElement("span");
-        span.textContent = currentName;
+        var span = createSpan(currentName, i);
+        
 
         li.appendChild(button);
         li.appendChild(span);
